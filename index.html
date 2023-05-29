@@ -25,7 +25,7 @@
 		<!-- https://unpkg.com/leaflet@0.7.3/dist/leaflet-src.js -->
 		<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet-src.js"></script>
 		<!-- https://unpkg.com/leaflet.markercluster@1.0.0/dist/leaflet.markercluster-src.js -->
-		<script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster-src.js"></script>
+		<script src="script/leaflet.markercluster-src.js"></script>
 		<!-- Installation Plugin Leaflet Draw JS -->
 		<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw-src.js"></script>
 
@@ -51,33 +51,20 @@
 
 		<!--on laisse celui la pour l'instant -->
 
-		<script type="text/javascript" src="donnees/AA.js"></script>
-		<script type="text/javascript" src="donnees/AOA.js"></script>
-		
-		<script type="text/javascript" src="donnees/communes.js"></script>
 		<script type="text/javascript" src="donnees/POI.js"></script>
-		<script type="text/javascript" src="donnees/circuits_vtt.js"></script>
-		<script type="text/javascript" src="donnees/batiments.js"></script>
-		<script type="text/javascript" src="donnees/sentiers_PDIPR.js"></script>
+		
+
 		<script>
 		var map;
+	
 		var markers = L.markerClusterGroup(); // initialisation de la variable pour les clusters
 		
 		// création de deux tableaux vides pour récupérer l'ensemble des années et catégories et gérer leur sélection/désélection
 		var tabCategories = new Array();
 		var poiLayers = new Array(); // tableau qui contiendra les features (données GeoJSON d'un point) et leur marker associé
-		var routeLayers = new Array();
 		
-		function displayRouteLayer(routeLayerId) {
-			var isChecked = document.getElementById(routeLayerId).checked;
-			if ((isChecked==true)&&(!map.hasLayer(routeLayers[routeLayerId]))){
-				routeLayers[routeLayerId].addTo(map);
-			} else {
-				if ((isChecked==false)&&(map.hasLayer(routeLayers[routeLayerId]))){
-					map.removeLayer(routeLayers[routeLayerId]);
-				}
-			}
-		}
+		
+	
 	
 		function initialize() {
 		
@@ -102,14 +89,14 @@
 
 
 			var mapbox = new L.TileLayer('http://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
-				attribution: 'Cartographie : <a href="https://cartodream.wixsite.com/website-1">Cartodream</a> , <a href="https://www.openstreetmap.fr/">OSM</a>'});
+				attribution: 'Cartographie : <a href="https://www.linkedin.com/in/alexandreponchon/">Cartodream</a> , <a href="https://www.openstreetmap.fr/">OSM</a>'});
 			map.addLayer(mapbox);
 			
 			var photos_aériennes = new L.TileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-				attribution: 'Cartographie : <a href="https://cartodream.wixsite.com/website-1">Cartodream</a> , <a href="https://www.openstreetmap.fr/">OSM</a>Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'});
+				attribution: 'Cartographie : <a href="https://www.linkedin.com/in/alexandreponchon/">Cartodream</a> , <a href="https://www.openstreetmap.fr/">OSM</a>Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'});
 			// map.addLayer(photos_aériennes);	
 			
-	
+			
 											
 			
 			//FIN TESTS
@@ -128,48 +115,6 @@
 			}));
 			L.control.layers(baseMaps).addTo(map)
 			
-			// FeatureGroup envoie vers une couche editable + controles de dessin
-			var drawnItems = new L.FeatureGroup();
-			map.addLayer(drawnItems);
-
-
-
-			// Create toggle button for draw controls
-			var displayDrawControls = false;
-			var toggleDraw = L.easyButton('Dessiner', function (btn, map) {
-				if (displayDrawControls) {
-					map.removeControl(drawControl);
-					displayDrawControls = false;
-				} else {
-					map.addControl(drawControl);
-					displayDrawControls = true;
-				}
-			});
-
-
-
-			// Function
-			function downloadObjectAsJson (exportObj, exportName) {
-				var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj));
-				var downloadAnchorNode = document.createElement('a');
-				downloadAnchorNode.setAttribute("href", dataStr);
-				downloadAnchorNode.setAttribute("download", exportName + ".json");
-				document.body.appendChild(downloadAnchorNode); // required for firefox
-				downloadAnchorNode.click();
-				downloadAnchorNode.remove();
-			}
-
-			// Create download button
-			var downloadButton = L.easyButton('Télécharger', function () {
-				var geojsonData = drawnItems.toGeoJSON();
-				downloadObjectAsJson(geojsonData, 'Votre dessin');
-			});
-
-
-
-			map.on(L.Draw.Event.CREATED, function (e) {
-				drawnItems.addLayer(e.layer);
-			});
 
 	
 			
@@ -282,20 +227,37 @@
 				
 				if ((currentFeature.properties.adresse != null) && (currentFeature.properties.adresse != ""))
 					popupContent += currentFeature.properties.adresse+'<br>';
+				if ((currentFeature.properties.sous_cat != null) && (currentFeature.properties.sous_cat != ""))
+					popupContent += '<center><b>'+currentFeature.properties.sous_cat+'</b></center>';
 				if ((currentFeature.properties.cp != null) && (currentFeature.properties.cp != ""))
 					popupContent += '<center><b>'+currentFeature.properties.cp+'</b></center>';
 				if ((currentFeature.properties.commune != null) && (currentFeature.properties.commune != "")) // si l'entité courante est rattachée à une commune
 					popupContent += '<center><b>'+currentFeature.properties.commune+'</b></center><br>'; // on ajoute cette commune au contenu de la popup
-			
+				if ((currentFeature.properties.nombre_enfants != null) && (currentFeature.properties.nombre_enfants != ""))
+					popupContent += '<b><u>Nombre de participants</u> : </b>'+currentFeature.properties.nombre_enfants+'<br>'
 				if ((currentFeature.properties.descriptif != null) && (currentFeature.properties.descriptif != ""))
 					popupContent += '<b>Interlocuteur : </b>'+currentFeature.properties.descriptif+'<br>'
 				
 				if ((currentFeature.properties.tel != null) && (currentFeature.properties.tel != ""))
 					popupContent += '<b>Tél : </b>'+currentFeature.properties.tel+'<br>';
-				if ((currentFeature.properties.mail != null) && (currentFeature.properties.mail != ""))
-					popupContent += '<b>Email : </b>'+currentFeature.properties.mail+'<br>';
-					if ((currentFeature.properties.nombre_enfants != null) && (currentFeature.properties.nombre_enfants != ""))
-					popupContent += '<b>Nombre d&#39;Enfants : </b>'+currentFeature.properties.nombre_enfants+'<br>'
+					
+				if ((currentFeature.properties.NRE != null) && (currentFeature.properties.NRE != "Activités mises en place :"))
+					popupContent += '<b><u>Activités mises en place</u> :</b><br> '+currentFeature.properties.NRE+'<br>'
+				else popupContent += '<b><u>Activités mises en place</u> : <br>Thématique(s) et activité(s) du kit UNIday : <br></b> ';	
+				if ((currentFeature.properties.Th1 != null) && (currentFeature.properties.Th1 != ""))
+					popupContent += '-  '+currentFeature.properties.Th1+'<br>';
+				if ((currentFeature.properties.Th2 != null) && (currentFeature.properties.Th2 != " "))
+					popupContent += '- '+currentFeature.properties.Th2+'<br>';	
+				if ((currentFeature.properties.Th3 != null) && (currentFeature.properties.Th3 != " "))
+					popupContent += '- '+currentFeature.properties.Th3+'<br>';		
+				if ((currentFeature.properties.Th4 != null) && (currentFeature.properties.Th4 != " "))
+					popupContent += '- '+currentFeature.properties.Th4+'<br>';	
+				if ((currentFeature.properties.Th5 != null) && (currentFeature.properties.Th5 != " "))
+					popupContent += '- '+currentFeature.properties.Th5+'<br>';	
+				if ((currentFeature.properties.Th6 != null) && (currentFeature.properties.Th6 != " "))
+					popupContent += '- '+currentFeature.properties.Th6+'<br>';
+				if ((currentFeature.properties.AA1 != null) && (currentFeature.properties.AA1 != " "))
+					popupContent += '<br><b> Autre(s) activité(s) :</b> <br>- '+currentFeature.properties.AA1+'<br>';		
 				if ((currentFeature.properties.site_web != null) && (currentFeature.properties.site_web != "")) // si l'entité courante a un lien
 					popupContent += '<b>Plus d\'infos : </b><a target="_blank" href="'+currentFeature.properties.site_web+'">'+currentFeature.properties.site_web+'</a><br>'; // on ajoute ce lien au contenu de la popup
 				// dans le tableau poiLayers, on affecte au marker de l'entité correspondante une popup dont le contenu vient d'être défini
@@ -480,7 +442,13 @@
 				  <ul class="off-canvas-list menu-checkbox" id="select-list">
 				
 				  </ul>
-				<center><img src="https://github.com/Cartodream/FMMedia/blob/main/Plan%20de%20travail%2012uni.jpg?raw=true" alt="Logo_unicef"/></center>
+				<center><img src="https://github.com/Cartodream/FMMedia/blob/main/Plan%20de%20travail%201uni.jpg?raw=true"/></center>
+				<br>
+				<center><img src="https://lesaventuresdeleo.fr/assets/logo-Les-aventures-de-Leo-Programmes.svg"width=30%></center>
+				<br>
+				<center><img src="https://github.com/Cartodream/FMMedia/blob/main/LOGO_IFAC.jpg?raw=true"width=30%></center>
+				<br>
+				<center><img src="https://www.villeamiedesenfants.fr/wp-content/uploads/sites/3/2022/11/logo-UNIDAY-baseline-RVB-1024x859.jpg"width=60%></center>
 				</section>
 				<section class="main-section">
 					<div id="mymap" style="width:100%;"></div>
@@ -506,7 +474,7 @@
 			  offcanvas : {
 				// Sets method in which offcanvas opens.
 				// [ move | overlap_single | overlap ]
-				open_method: 'overlap_single', 
+				open_method: 'overlap', 
 				// Should the menu close when a menu link is clicked?
 				// [ true | false ]
 				close_on_click : false
